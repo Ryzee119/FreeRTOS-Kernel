@@ -213,6 +213,8 @@ _skip_context_switch:
         1:
     .endif
 
+    movb $0x20, %al
+    outb %al, $0x20
     popa
 
     /* EOI. */
