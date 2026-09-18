@@ -288,10 +288,14 @@ BaseType_t xPortInstallInterruptHandler( ISR_Handler_t pxHandler,
 #define portAPIC_MAX_SUB_PRIORITY      ( 0x0fUL )
 #define portMAX_API_CALL_PRIORITY      ( ( configMAX_API_CALL_INTERRUPT_PRIORITY << portAPIC_PRIORITY_SHIFT ) | portAPIC_MAX_SUB_PRIORITY )
 
-/* Asserts if interrupt safe FreeRTOS functions are called from a priority
- * above the max system call interrupt priority. */
-#define portAPIC_PROCESSOR_PRIORITY    ( *( ( volatile uint32_t * ) ( configAPIC_BASE + 0xA0UL ) ) )
-#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID()    configASSERT( ( portAPIC_PROCESSOR_PRIORITY ) <= ( portMAX_API_CALL_PRIORITY ) )
+#ifndef portASSERT_IF_INTERRUPT_PRIORITY_INVALID
+    #if ( configMAX_API_CALL_INTERRUPT_PRIORITY == portMAX_PRIORITY )
+        #define portASSERT_IF_INTERRUPT_PRIORITY_INVALID()
+    #else
+        #define portAPIC_PROCESSOR_PRIORITY                   ( *( ( volatile uint32_t * ) ( configAPIC_BASE + 0xA0UL ) ) )
+        #define portASSERT_IF_INTERRUPT_PRIORITY_INVALID()    configASSERT( ( portAPIC_PROCESSOR_PRIORITY ) <= ( portMAX_API_CALL_PRIORITY ) )
+    #endif
+#endif
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
